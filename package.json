@@ -1,0 +1,10 @@
+{
+  "name": "create-js-playground",
+  "version": "0.0.1-alpha.1",
+  "main": "src/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "shelljs": "^0.7.8",
+    "yargs": "^9.0.1"
+  }
+}

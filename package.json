@@ -1,23 +1,23 @@
 {
-    "name": "create-js-playground",
-    "version": "0.0.1-alpha.3",
-    "license": "MIT",
-    "scripts": {
-        "precommit": "yarn run lint",
-        "test": "yarn run lint",
-        "lint": "eslint ."
-    },
-    "bin": {
-        "create-js-playground": "./src/index.js"
-    },
-    "dependencies": {
-        "listr": "^0.13.0",
-        "shelljs": "^0.7.8",
-        "yargs": "^10.0.3"
-    },
-    "devDependencies": {
-        "@sharkcore/eslint-config": "^1.0.0",
-        "eslint": "^4.10.0",
-        "husky": "^0.14.3"
-    }
+  "name": "create-js-playground",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "precommit": "yarn run lint",
+    "test": "yarn run lint",
+    "lint": "eslint ."
+  },
+  "bin": {
+    "create-js-playground": "./src/index.js"
+  },
+  "dependencies": {
+    "listr": "^0.13.0",
+    "shelljs": "^0.7.8",
+    "yargs": "^10.0.3"
+  },
+  "devDependencies": {
+    "@sharkcore/eslint-config": "^1.0.0",
+    "eslint": "^4.10.0",
+    "husky": "^0.14.3"
+  }
 }

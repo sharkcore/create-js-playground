@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
 const path = require('path');
-const fs = require('fs');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
+const Listr = require('listr');
 const shell = require('shelljs');
+const Yargs = require('yargs');
 
 const MAKEFILE = `any: build
 
@@ -31,40 +34,74 @@ const BABELRC = `{
 
 const DEVDEPS = ['babel-cli', 'babel-core', 'babel-preset-env'];
 
-function generatePlayground(argv) {
-    const appDir = path.join(process.cwd(), argv.appName);
+async function makeGitRepo(appDir) {
+    await exec(`git init ${appDir}`);
+}
 
-    shell.mkdir(appDir);
+async function initYarn(appDir) {
+    await exec('yarn init --yes', {
+        cwd: appDir,
+        stdio: ['ignore', 'ignore', 'ignore'],
+    });
+}
+
+async function addYarnDevDeps(appDir) {
+    await exec(`yarn add ${DEVDEPS.join(' ')} --dev`, {
+        cwd: appDir,
+        stdio: ['ignore', 'ignore', 'ignore'],
+    });
+}
+
+async function addFiles(appDir) {
     shell.cd(appDir);
 
     shell.mkdir('src');
     shell.touch('src/index.js');
 
-    if (shell.exec('yarn init --yes').code !== 0) {
-        shell.echo('Error: yarn failed');
-        shell.exit(1);
-    }
-
-    if (shell.exec(`yarn add ${DEVDEPS.join(' ')} --dev --offline`).code !== 0) {
-        shell.echo('Error: yarn add deps failed');
-        shell.exit(1);
-    }
-
     shell.ShellString(MAKEFILE).to('Makefile');
     shell.ShellString(BABELRC).to('.babelrc');
 }
 
-function main() {
-    const argv = require('yargs')
-        .options({
-            appName: {
-                type: 'string',
-                describe: 'name of app',
-            },
-        })
-        .help().argv;
+function finish(appDir) {
+    // eslint-disable-next-line no-console
+    console.log(`
+      Congrats! Enjoy your new library here:
+      ${appDir}
+    `);
+}
 
-    generatePlayground(argv);
+function generatePlayground(argv) {
+    const appDir = path.join(process.cwd(), argv.appName);
+    const tasks = new Listr([
+        { title: 'Creating git repo', task: makeGitRepo.bind(null, appDir) },
+        { title: 'Creating yarn package', task: initYarn.bind(null, appDir) },
+        {
+            title: 'Adding Yarn Dependencies',
+            task: addYarnDevDeps.bind(null, appDir),
+        },
+        { title: 'Adding files', task: addFiles.bind(null, appDir) },
+    ]);
+
+    tasks
+        .run()
+        .catch(err => {
+            // eslint-disable-next-line no-console
+            console.error(err);
+        })
+        .then(() => {
+            finish(appDir);
+        });
+}
+
+function main() {
+    const command = Yargs.command('$0 <appName>', 'create', yargs => {
+        yargs.positional('appName', {
+            describe: 'Name of app',
+            type: 'string',
+        });
+    }).help();
+
+    generatePlayground(command.argv);
 }
 
 if (process.env.NODE_ENV !== 'test') {

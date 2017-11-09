@@ -31,32 +31,42 @@ const BABELRC = `{
 
 const DEVDEPS = ['babel-cli', 'babel-core', 'babel-preset-env'];
 
-const argv = require('yargs')
-    .options({
-        appName: {
-            type: 'string',
-            describe: 'name of app',
-        },
-    })
-    .help().argv;
+function generatePlayground(argv) {
+    const appDir = path.join(process.cwd(), argv.appName);
 
-const appDir = path.join(process.cwd(), argv.appName);
+    shell.mkdir(appDir);
+    shell.cd(appDir);
 
-shell.mkdir(appDir);
-shell.cd(appDir);
+    shell.mkdir('src');
+    shell.touch('src/index.js');
 
-shell.mkdir('src');
-shell.touch('src/index.js');
+    if (shell.exec('yarn init --yes').code !== 0) {
+        shell.echo('Error: yarn failed');
+        shell.exit(1);
+    }
 
-if (shell.exec('yarn init --yes').code !== 0) {
-    shell.echo('Error: yarn failed');
-    shell.exit(1);
+    if (shell.exec(`yarn add ${DEVDEPS.join(' ')} --dev --offline`).code !== 0) {
+        shell.echo('Error: yarn add deps failed');
+        shell.exit(1);
+    }
+
+    shell.ShellString(MAKEFILE).to('Makefile');
+    shell.ShellString(BABELRC).to('.babelrc');
 }
 
-if (shell.exec(`yarn add ${DEVDEPS.join(' ')} --dev`).code !== 0) {
-    shell.echo('Error: yarn add deps failed');
-    shell.exit(1);
+function main() {
+    const argv = require('yargs')
+        .options({
+            appName: {
+                type: 'string',
+                describe: 'name of app',
+            },
+        })
+        .help().argv;
+
+    generatePlayground(argv);
 }
 
-shell.ShellString(MAKEFILE).to('Makefile');
-shell.ShellString(BABELRC).to('.babelrc');
+if (process.env.NODE_ENV !== 'test') {
+    main();
+}

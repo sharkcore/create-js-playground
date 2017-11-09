@@ -32,7 +32,12 @@ const BABELRC = `{
   ],
 }`;
 
-const DEVDEPS = ['babel-cli', 'babel-core', 'babel-preset-env'];
+const DEVDEPS = [
+    'babel-cli',
+    'babel-core',
+    'babel-preset-env',
+    'babel-preset-flow',
+];
 
 async function makeGitRepo(appDir) {
     await exec(`git init ${appDir}`);
